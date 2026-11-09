@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { translations } from '../i18n'
-import { APPS_SCRIPT_URL, BIZUM_PHONE, PRICES, SHIRT_SIZES } from '../config'
+import { ADULT_SIZES, APPS_SCRIPT_URL, BIZUM_PHONE, KIDS_SIZES, PRICES } from '../config'
 import { findSize } from '../sizes'
 
 const fill = (str, vars) => str.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '')
@@ -21,7 +21,7 @@ function Field({ label, optional, htmlFor, children, hint }) {
   )
 }
 
-function SizeSelect({ id, value, onChange, sizes, placeholder, isKit, t }) {
+function SizeSelect({ id, value, onChange, placeholder, isKit, t }) {
   const mShirt = value ? findSize('shirt', value) : null
   const mShorts = value && isKit ? findSize('shorts', value) : null
   return (
@@ -35,9 +35,16 @@ function SizeSelect({ id, value, onChange, sizes, placeholder, isKit, t }) {
           className={`${inputBase} cursor-pointer appearance-none pr-10 ${value ? '' : 'text-white/40'}`}
         >
           <option value="" disabled>{placeholder}</option>
-          {sizes.map((s) => (
-            <option key={s} value={s} className="text-white">{s}</option>
-          ))}
+          <optgroup label={t.kids} className="bg-ink text-white">
+            {KIDS_SIZES.map((s) => (
+              <option key={s} value={s} className="text-white">{s}</option>
+            ))}
+          </optgroup>
+          <optgroup label={t.adults} className="bg-ink text-white">
+            {ADULT_SIZES.map((s) => (
+              <option key={s} value={s} className="text-white">{s}</option>
+            ))}
+          </optgroup>
         </select>
         <svg viewBox="0 0 24 24" className="pointer-events-none absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 text-accent" fill="none" stroke="currentColor" strokeWidth="3" aria-hidden="true">
           <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
@@ -255,7 +262,7 @@ export default function OrderModal({ initialProduct = 'kit', lang, onClose, onSu
             </Field>
 
             <Field label={o.size} htmlFor="f-size">
-              <SizeSelect id="f-size" isKit={isKit} value={form.shirtSize} onChange={set('shirtSize')} sizes={SHIRT_SIZES} placeholder={o.choose} t={t.sizes} />
+              <SizeSelect id="f-size" isKit={isKit} value={form.shirtSize} onChange={set('shirtSize')} placeholder={o.choose} t={t.sizes} />
             </Field>
 
             <div className="grid grid-cols-[1fr_2fr] gap-4">

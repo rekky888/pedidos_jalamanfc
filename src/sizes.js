@@ -27,10 +27,12 @@ export const SIZE_DATA = {
   ],
 }
 
-// Busca la medida [largo, ancho] de una talla adulta
+// Busca la medida [largo, ancho] de cualquier talla (infantil o adulta)
 export const findSize = (type, size) => {
   const groups = SIZE_DATA[type]
-  const adult = groups.find((g) => g.group === 'adults')
-  const row = adult?.rows.find((r) => r[0] === size)
-  return row ? { length: row[1], width: row[2] } : null
+  for (const g of groups) {
+    const row = g.rows.find((r) => r[0] === size)
+    if (row) return { length: row[1], width: row[2] }
+  }
+  return null
 }

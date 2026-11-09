@@ -20,5 +20,6 @@ export const PRICES = {
 }
 
 // Tallas disponibles en el formulario
-export const SHIRT_SIZES = ['S', 'M', 'L', 'XL', 'XXL']
-export const SHORTS_SIZES = ['S', 'M', 'L', 'XL', 'XXL']
+export const KIDS_SIZES = ['4', '6', '8', '10', '12', '14', '16']
+export const ADULT_SIZES = ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL']
+export const SHIRT_SIZES = [...KIDS_SIZES, ...ADULT_SIZES]
