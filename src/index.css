@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+/* ===== Tema Jalaman FC =====
+   Cambia --color-accent para probar otro color (p.ej. #39ff14 verde neón, #2f7bff azul eléctrico) */
+@theme {
+  --color-ink: #0a0a0b;
+  --color-ink-2: #131316;
+  --color-ink-3: #1c1c21;
+  --color-accent: #ff4fa3;
+  --color-accent-soft: #f6a5c8;
+  --font-display: "Anton", "Impact", sans-serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  @apply bg-ink text-white font-sans antialiased;
+}
+
+/* Rayas verticales finas inspiradas en la camiseta */
+.pinstripes {
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgb(255 255 255 / 0.035) 0 1px,
+    transparent 1px 28px
+  );
+}
+
+.text-outline {
+  -webkit-text-stroke: 1.5px var(--color-accent);
+  color: transparent;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 22s linear infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-10px) rotate(-2deg); }
+}
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in { animation: fade-in 0.25s ease-out both; }
+
+@keyframes sheet-up {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-sheet-up { animation: sheet-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@keyframes pop {
+  0% { opacity: 0; transform: scale(0.8) rotate(-2deg); }
+  60% { opacity: 1; transform: scale(1.04) rotate(0.5deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+.animate-pop { animation: pop 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@keyframes confetti {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(520px) rotate(540deg); opacity: 0; }
+}
+.animate-confetti { animation: confetti 2s ease-in both; }
+
+@keyframes draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+.animate-draw path {
+  stroke-dasharray: 1;
+  animation: draw 0.5s 0.3s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee, .animate-float, .animate-confetti { animation: none; }
+  .animate-confetti { display: none; }
+  html { scroll-behavior: auto; }
+}
