@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { translations } from '../i18n'
-import { APPS_SCRIPT_URL, BIZUM_PHONE, PRICES, SHIRT_SIZES, SHORTS_SIZES } from '../config'
+import { APPS_SCRIPT_URL, BIZUM_PHONE, PRICES, SHIRT_SIZES } from '../config'
 import { findSize } from '../sizes'
 
 const fill = (str, vars) => str.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '')
@@ -21,8 +21,9 @@ function Field({ label, optional, htmlFor, children, hint }) {
   )
 }
 
-function SizeSelect({ id, value, onChange, sizes, placeholder, type, t }) {
-  const m = value ? findSize(type, value) : null
+function SizeSelect({ id, value, onChange, sizes, placeholder, isKit, t }) {
+  const mShirt = value ? findSize('shirt', value) : null
+  const mShorts = value && isKit ? findSize('shorts', value) : null
   return (
     <>
       <div className="relative">
@@ -42,9 +43,10 @@ function SizeSelect({ id, value, onChange, sizes, placeholder, type, t }) {
           <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
-      {m && (
+      {mShirt && (
         <p className="mt-1.5 text-xs text-white/45">
-          {t.length} {m.length} cm · {t.width} {m.width} cm
+          {isKit ? `${t.shirt}: ` : ''}{t.length} {mShirt.length} cm · {t.width} {mShirt.width} cm
+          {mShorts ? `  |  ${t.shorts}: ${t.length} ${mShorts.length} cm · ${t.width} ${mShorts.width} cm` : ''}
         </p>
       )}
     </>
@@ -107,8 +109,9 @@ export default function OrderModal({ initialProduct = 'kit', lang, onClose, onSu
       producto: translations.es.shop[form.product].name, // siempre en castellano para la hoja
       productoId: form.product,
       precio: price,
+      talla: form.shirtSize,
       tallaCamiseta: form.shirtSize,
-      tallaPantalon: isKit ? form.shortsSize : '',
+      tallaPantalon: isKit ? form.shirtSize : '',
       dorsal: form.number,
       nombreEspalda: form.backName.trim().toUpperCase(),
       bizumConfirmado: form.bizum ? 'SÍ' : 'NO',
@@ -251,18 +254,9 @@ export default function OrderModal({ initialProduct = 'kit', lang, onClose, onSu
               {phoneError && <p className="mt-1.5 text-xs font-semibold text-red-400">{o.invalidPhone}</p>}
             </Field>
 
-            <div className={`grid gap-4 ${isKit ? 'grid-cols-2' : 'grid-cols-1'}`}>
-              <Field label={o.shirtSize} htmlFor="f-shirt">
-                <SizeSelect id="f-shirt" type="shirt" value={form.shirtSize} onChange={set('shirtSize')} sizes={SHIRT_SIZES} placeholder={o.choose} t={t.sizes} />
-              </Field>
-              {isKit && (
-                <div className="animate-fade-in">
-                  <Field label={o.shortsSize} htmlFor="f-shorts">
-                    <SizeSelect id="f-shorts" type="shorts" value={form.shortsSize} onChange={set('shortsSize')} sizes={SHORTS_SIZES} placeholder={o.choose} t={t.sizes} />
-                  </Field>
-                </div>
-              )}
-            </div>
+            <Field label={o.size} htmlFor="f-size">
+              <SizeSelect id="f-size" isKit={isKit} value={form.shirtSize} onChange={set('shirtSize')} sizes={SHIRT_SIZES} placeholder={o.choose} t={t.sizes} />
+            </Field>
 
             <div className="grid grid-cols-[1fr_2fr] gap-4">
               <Field label={o.number} optional={o.optional} htmlFor="f-number">
