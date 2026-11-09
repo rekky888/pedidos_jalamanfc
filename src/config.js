@@ -7,7 +7,7 @@
 export const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwfb3sN80N7BwKgeNE7C_HXJ0LIOmhNXqzpl9WWBsQ1rR7FarC3fl-cAFDz1BwLXHgMiA/exec'
 
 // Número de teléfono al que se envía el Bizum (se muestra en la web y en el formulario).
-export const BIZUM_PHONE = '600 000 000'
+export const BIZUM_PHONE = '602 45 83 22'
 
 export const LINKS = {
   instagram: 'https://www.instagram.com/jalamanfc', // Cambia por vuestro usuario
