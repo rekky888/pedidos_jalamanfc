@@ -1,11 +1,23 @@
 import { useCallback, useEffect, useState } from 'react'
 import { translations } from './i18n'
-import { BIZUM_PHONE, LINKS, PRICES } from './config'
+import { BIZUM_PHONE, LINKS, ORDER_DEADLINE, PRICES } from './config'
 import { SIZE_DATA } from './sizes'
 import OrderModal from './components/OrderModal'
 import SuccessOverlay from './components/SuccessOverlay'
 
 const YEAR = new Date().getFullYear()
+const DEADLINE_MS = new Date(ORDER_DEADLINE).getTime()
+
+const calcTimeLeft = (now) => {
+  const diff = Math.max(0, DEADLINE_MS - now)
+  return {
+    total: diff,
+    days: Math.floor(diff / 86_400_000),
+    hours: Math.floor((diff / 3_600_000) % 24),
+    mins: Math.floor((diff / 60_000) % 60),
+    secs: Math.floor((diff / 1000) % 60),
+  }
+}
 
 /* ---------- Iconos SVG inline ---------- */
 const Arrow = ({ className = 'h-5 w-5' }) => (
@@ -61,6 +73,50 @@ const CtaButton = ({ href, onClick, children, variant = 'primary', className = '
   )
 }
 
+/* ---------- Contador hasta el 30 de noviembre ---------- */
+function Countdown({ t }) {
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(id)
+  }, [])
+
+  const left = calcTimeLeft(now)
+  const units = [
+    { key: 'days', value: left.days, label: t.days },
+    { key: 'hours', value: left.hours, label: t.hours },
+    { key: 'mins', value: left.mins, label: t.mins },
+    { key: 'secs', value: left.secs, label: t.secs },
+  ]
+
+  return (
+    <div className="mx-auto mt-8 max-w-md rounded-2xl border border-accent/40 bg-ink-2/90 p-4 shadow-lg shadow-accent/10 backdrop-blur lg:mx-0">
+      <div className="flex items-center justify-center gap-2 lg:justify-start">
+        <span className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
+        </span>
+        <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-accent">{t.label}</p>
+      </div>
+      {left.total > 0 ? (
+        <div className="mt-3 grid grid-cols-4 gap-2 text-center">
+          {units.map((u) => (
+            <div key={u.key} className="rounded-xl border border-white/10 bg-ink px-2 py-2.5">
+              <p className="font-display text-3xl leading-none tabular-nums text-white sm:text-4xl">
+                {String(u.value).padStart(2, '0')}
+              </p>
+              <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-white/50">{u.label}</p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-2 font-display text-2xl uppercase text-white">{t.closed}</p>
+      )}
+      <p className="mt-2.5 text-center text-xs text-white/55 lg:text-left">{t.sub}</p>
+    </div>
+  )
+}
+
 /* ---------- Header ---------- */
 function Header({ lang, setLang, t }) {
   const [scrolled, setScrolled] = useState(false)
@@ -87,7 +143,8 @@ function Header({ lang, setLang, t }) {
 
         <nav className="hidden items-center gap-8 text-sm font-semibold text-white/70 md:flex">
           <a href="#tienda" className="transition-colors hover:text-accent">{t.nav.shop}</a>
-          <a href="#info" className="transition-colors hover:text-accent">{t.nav.info}</a>
+          <a href="#pago" className="transition-colors hover:text-accent">{t.nav.payment}</a>
+          <a href="#tallas" className="transition-colors hover:text-accent">{t.nav.sizes}</a>
         </nav>
 
         {/* Selector de idioma */}
@@ -147,9 +204,14 @@ function Hero({ t, onOrder }) {
             {t.hero.text}
           </p>
 
-          <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:justify-center lg:justify-start">
+          <Countdown t={t.countdown} />
+
+          <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:justify-center lg:justify-start">
             <CtaButton onClick={() => onOrder('kit')}>{t.hero.cta}</CtaButton>
-            <CtaButton href="#info" variant="ghost">{t.nav.info}</CtaButton>
+            <div className="grid grid-cols-2 gap-3 sm:flex">
+              <CtaButton href="#pago" variant="ghost">{t.nav.payment}</CtaButton>
+              <CtaButton href="#tallas" variant="ghost">{t.nav.sizes}</CtaButton>
+            </div>
           </div>
 
           <dl className="mx-auto mt-10 grid max-w-sm grid-cols-3 divide-x divide-white/10 border-y border-white/10 py-4 lg:mx-0">
@@ -178,10 +240,7 @@ function Hero({ t, onOrder }) {
               className="aspect-[3/4] w-full object-cover"
               fetchPriority="high"
             />
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/90 to-transparent p-5">
-              <p className="font-display text-3xl uppercase leading-none">Infernu</p>
-              <p className="text-xs font-semibold uppercase tracking-widest text-accent">{t.hero.stat3}</p>
-            </div>
+            <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-ink/60 to-transparent" />
           </div>
           <Crest className="absolute -top-6 -right-4 h-20 w-auto drop-shadow-2xl sm:h-24" />
         </div>
@@ -309,10 +368,10 @@ function Shop({ t, onOrder }) {
   )
 }
 
-/* ---------- Tallas y Bizum ---------- */
-function Info({ t }) {
+/* ---------- Pago ---------- */
+function PaymentSection({ t }) {
   return (
-    <section id="info" className="scroll-mt-20 pb-20 sm:pb-28">
+    <section id="pago" className="scroll-mt-20 pb-16 sm:pb-24">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="pinstripes relative overflow-hidden rounded-3xl border border-white/10 bg-ink-2 p-6 sm:p-10 lg:p-14">
           <div className="pointer-events-none absolute -right-20 -bottom-20 h-64 w-64 rounded-full bg-accent/20 blur-[100px]" />
@@ -344,11 +403,50 @@ function Info({ t }) {
                 bizum
               </span>
               <p className="text-sm leading-relaxed text-white/80">
-                <strong className="text-accent">{t.info.noteTitle}:</strong> {t.info.note}
+                <strong className="text-accent">{t.info.noteTitle} ({BIZUM_PHONE}):</strong> {t.info.note}
               </p>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
 
-            <SizeGuide t={t.sizes} />
+/* ---------- Apartado visual: Pedido conjunto a fábrica ---------- */
+function ProductionBanner({ t }) {
+  return (
+    <section className="pb-16 sm:pb-24">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="relative overflow-hidden rounded-3xl border-2 border-accent/50 bg-gradient-to-br from-accent/15 via-ink-2 to-ink-2 p-6 shadow-[0_0_70px_-25px_rgba(255,79,163,0.5)] sm:p-10 lg:p-12">
+          <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-accent/25 blur-[110px]" />
+
+          <div className="relative grid items-center gap-8 lg:grid-cols-[1.1fr_1.4fr]">
+            <div>
+              <span className="inline-flex items-center gap-2 rounded-full bg-accent px-3.5 py-1 text-[11px] font-extrabold uppercase tracking-widest text-ink">
+                {t.eyebrow}
+              </span>
+              <h2 className="mt-4 font-display text-4xl uppercase leading-none sm:text-5xl">{t.title}</h2>
+              <p className="mt-4 text-base leading-relaxed text-white/80">{t.text}</p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-3">
+              {t.items.map((item, idx) => (
+                <div
+                  key={item.title}
+                  className="relative flex flex-col justify-between rounded-2xl border border-white/15 bg-ink/80 p-5 backdrop-blur"
+                >
+                  <div>
+                    <span className="inline-block rounded-full border border-accent/40 bg-accent/10 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-widest text-accent">
+                      {item.tag}
+                    </span>
+                    <h3 className="mt-3 font-display text-2xl uppercase leading-tight text-white">{item.title}</h3>
+                    <p className="mt-1.5 text-xs leading-relaxed text-white/60">{item.desc}</p>
+                  </div>
+                  <span className="mt-4 font-display text-3xl leading-none text-white/15">0{idx + 1}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -387,50 +485,54 @@ function SizeTable({ title, rows, t }) {
   )
 }
 
-function SizeGuide({ t }) {
+function SizeGuideSection({ t }) {
   const [tab, setTab] = useState('shirt')
   const tables = SIZE_DATA[tab]
 
   return (
-    <div className="mt-12 border-t border-white/10 pt-10">
-      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-accent">{t.eyebrow}</p>
-          <h3 className="mt-2 font-display text-3xl uppercase leading-none sm:text-4xl">{t.title}</h3>
-          <p className="mt-3 max-w-lg text-sm leading-relaxed text-white/60">{t.text}</p>
-        </div>
+    <section id="tallas" className="scroll-mt-20 pb-20 sm:pb-28">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="pinstripes relative overflow-hidden rounded-3xl border border-white/10 bg-ink-2 p-6 sm:p-10 lg:p-14">
+          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-accent">{t.eyebrow}</p>
+              <h2 className="mt-2 font-display text-4xl uppercase leading-none sm:text-5xl">{t.title}</h2>
+              <p className="mt-3 max-w-lg text-sm leading-relaxed text-white/60">{t.text}</p>
+            </div>
 
-        {/* Pestañas Camiseta / Pantalón */}
-        <div role="tablist" className="flex w-full rounded-full border border-white/15 bg-white/5 p-1 md:w-auto">
-          {['shirt', 'shorts'].map((key) => (
-            <button
-              key={key}
-              role="tab"
-              aria-selected={tab === key}
-              onClick={() => setTab(key)}
-              className={`flex-1 rounded-full px-6 py-2.5 text-xs font-extrabold uppercase tracking-wider transition-all duration-300 md:flex-none ${
-                tab === key ? 'bg-accent text-ink shadow-lg shadow-accent/30' : 'text-white/60 hover:text-white'
-              }`}
-            >
-              {t[key]}
-            </button>
-          ))}
+            {/* Pestañas Camiseta / Pantalón */}
+            <div role="tablist" className="flex w-full rounded-full border border-white/15 bg-white/5 p-1 md:w-auto">
+              {['shirt', 'shorts'].map((key) => (
+                <button
+                  key={key}
+                  role="tab"
+                  aria-selected={tab === key}
+                  onClick={() => setTab(key)}
+                  className={`flex-1 rounded-full px-6 py-2.5 text-xs font-extrabold uppercase tracking-wider transition-all duration-300 md:flex-none ${
+                    tab === key ? 'bg-accent text-ink shadow-lg shadow-accent/30' : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  {t[key]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className={`mt-8 grid gap-4 md:gap-6 ${tables.length > 1 ? 'md:grid-cols-2' : 'mx-auto max-w-md'}`}>
+            {tables.map((table) => (
+              <SizeTable
+                key={tab + table.group}
+                title={tab === 'shirt' ? t[table.group] : null}
+                rows={table.rows}
+                t={t}
+              />
+            ))}
+          </div>
+
+          <p className="mt-4 text-center text-xs text-white/40">{t.tolerance}</p>
         </div>
       </div>
-
-      <div className={`mt-8 grid gap-4 md:gap-6 ${tables.length > 1 ? 'md:grid-cols-2' : 'mx-auto max-w-md'}`}>
-        {tables.map((table) => (
-          <SizeTable
-            key={tab + table.group}
-            title={tab === 'shirt' ? t[table.group] : null}
-            rows={table.rows}
-            t={t}
-          />
-        ))}
-      </div>
-
-      <p className="mt-4 text-center text-xs text-white/40">{t.tolerance}</p>
-    </div>
+    </section>
   )
 }
 
@@ -506,7 +608,9 @@ export default function App() {
         <Hero t={t} onOrder={openOrder} />
         <Marquee items={t.marquee} />
         <Shop t={t} onOrder={openOrder} />
-        <Info t={t} />
+        <PaymentSection t={t} />
+        <ProductionBanner t={t.production} />
+        <SizeGuideSection t={t.sizes} />
       </main>
       <Footer t={t} />
 

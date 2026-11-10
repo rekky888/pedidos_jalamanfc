@@ -9,6 +9,9 @@ export const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxhPKbAI
 // Número de teléfono al que se envía el Bizum (se muestra en la web y en el formulario).
 export const BIZUM_PHONE = '602 45 83 22'
 
+// Fecha límite para hacer pedidos (30 de noviembre a las 23:59:59)
+export const ORDER_DEADLINE = '2026-11-30T23:59:59+01:00'
+
 export const LINKS = {
   instagram: 'https://www.instagram.com/jalamanfc', // Cambia por vuestro usuario
   email: 'jalamanfc@gmail.com', // Cambia por vuestro correo
