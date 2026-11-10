@@ -587,8 +587,8 @@ export default function App() {
   useEffect(() => {
     document.documentElement.lang = lang
     localStorage.setItem('jlmn-lang', lang)
-    document.title = `Jalaman FC · ${t.hero.titleA} ${t.hero.titleB}`
-  }, [lang, t])
+    document.title = 'Jalaman FC'
+  }, [lang])
 
   // Estado del modal de pedido y del mensaje de éxito
   const [orderProduct, setOrderProduct] = useState(null) // null = cerrado | 'shirt' | 'kit'
